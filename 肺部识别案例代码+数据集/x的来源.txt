@@ -1,0 +1,33 @@
+#这是一个x来源的例子
+import torch
+import torch.nn as nn
+
+class ExampleModel(nn.Module):
+    def __init__(self):
+        super(ExampleModel, self).__init__()
+        self.conv_layer = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3)
+        self.pooling_layer = AdaptiveConcatPool2d()
+
+    def forward(self, x):
+        x = self.conv_layer(x)  # 应用卷积层
+        x = self.pooling_layer(x)  # 应用自定义的池化层
+        return x
+
+# 创建模型实例
+model = ExampleModel()
+
+# 假设我们有一批输入数据 (batch of input data)，例如一批尺寸为 224x224 的 RGB 图像
+input_data = torch.randn(10, 3, 224, 224)  # 这里创建了一个随机张量作为示例
+
+# 将输入数据传递给模型
+output = model(input_data)
+
+# 在这里，'input_data' 就是 'x' 的来源
+#model(input_data) 调用触发了 nn.Module.__call__ 方法。
+#当你执行 output = model(input_data) 时，实际上是在调用 model.__call__(input_data)
+#__call__ 方法内部会做一些预处理工作，如检查是否需要追踪梯度、应用注册的钩子（hooks）等。
+#__call__ 方法会将传递给模型实例的数据按照位置顺序依次赋值(除非是self这种特殊变量）
+#然后它会调用 model 的 forward 方法，并将 input_data 作为 x 的来源传递进去。
+#但如果改为def forward(self, x, y)，则会出错，因为model(input_data)只传递了一个数据
+#这时model((input_x, input_y))才是正确的格式，__call__ 方法会让 forward 函数在使用时，input_x 作为x的来源, input_y作为y的来源
+#最终，forward 方法返回变换后的结果，这个结果被赋值给 output 变量。
